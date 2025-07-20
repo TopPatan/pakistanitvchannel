@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Watch live Pakistani TV channels including SAMAA TV, PTV, Geo News, ARY Digital, Hum TV and more. Free streaming of Pakistani news, entertainment and sports channels.">
+    <meta name="keywords" content="Pakistani TV channels, live Pakistan TV, SAMAA TV live, PTV live, Geo News live, ARY Digital live, Hum TV live, Pakistani news channels, watch Pakistani TV online">
+    <title>Pakistani TV Channels Live | Watch SAMAA TV, PTV, Geo News Online</title>
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #046A38;
+            --secondary-color: #01411C;
+            --text-color: #333;
+            --light-bg: #f5f5f5;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        
+        /* Player Container with Fixed Aspect Ratio */
+        .player-wrapper {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+        .player-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            background: #000;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        #main-player {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Custom Control Bar */
+        .vjs-control-bar {
+            background: rgba(0,0,0,0.7) !important;
+        }
+        .vjs-button > .vjs-icon-placeholder:before {
+            line-height: 2.8;
+        }
+        .vjs-control {
+            width: auto !important;
+            min-width: 2.5em;
+        }
+        
+        /* Channel List */
+        .channel-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .channel-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .channel-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .channel-logo-container {
+            height: 0;
+            padding-bottom: 60%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f9f9f9;
+        }
+        .channel-logo {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .channel-info {
+            padding: 10px;
+            text-align: center;
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .channel-name {
+            font-weight: bold;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 14px;
+        }
+        
+        /* Loading and Error States */
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 16px;
+            z-index: 10;
+            background-color: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        .error-message {
+            color: #ff4444;
+            text-align: center;
+            padding: 15px;
+            display: none;
+            background-color: rgba(255,255,255,0.9);
+            border-radius: 5px;
+            margin: 10px;
+        }
+        
+        /* Active Channel Indicator */
+        .channel-active {
+            border: 3px solid var(--secondary-color);
+            position: relative;
+        }
+        .channel-active::after {
+            content: "▶ Playing";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: var(--secondary-color);
+            color: white;
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            z-index: 2;
+        }
+        
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            margin-top: 30px;
+            font-size: 13px;
+        }
+        
+        /* Search Box */
+        .search-container {
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+        }
+        #channel-search {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            font-size: 14px;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .channel-list {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+            header h1 {
+                font-size: 24px;
+            }
+        }
+        @media (max-width: 480px) {
+            .channel-list {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-satellite-dish"></i> Pakistani TV Channels Live</h1>
+    </header>
+
+    <div class="container">
+        <div class="search-container">
+            <input type="text" id="channel-search" placeholder="Search channels..." aria-label="Search TV channels">
+        </div>
+
+        <div class="player-wrapper">
+            <div class="player-container">
+                <div id="loading">Loading player, please wait...</div>
+                <div class="error-message" id="error-msg">
+                    Error loading channel. Please try another channel or check your connection.
+                    <button class="vjs-button" id="retry-btn" style="margin-top: 10px;">
+                        <i class="fas fa-sync-alt"></i> Retry
+                    </button>
+                </div>
+                <video id="main-player" class="video-js vjs-default-skin" controls preload="auto" playsinline>
+                    <p class="vjs-no-js">
+                        To view this video please enable JavaScript, and consider upgrading to a
+                        web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+                    </p>
+                </video>
+            </div>
+        </div>
+
+        <h2><i class="fas fa-list"></i> Available Channels</h2>
+        <div class="channel-list" id="channel-list">
+            <!-- Channels will be added dynamically -->
+        </div>
+    </div>
+
+    <footer>
+        <p>© <span id="current-year"></span> Pakistani TV Channels Live</p>
+    </footer>
+
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <script>
+        // Channel data with names, URLs and logos - SAMAA TV first for autoplay
+        const channels = [
+            { 
+                name: "SAMAA TV", 
+                url: "https://cdn5.mjunoon.tv:8087/web/SAMAA-173/live/173H/chunks.m3u8", 
+                logo: "https://images.mjunoon.tv:8181/logo/samaa-tv-mjunoon.webp" 
+            },
+            { 
+                name: "Madni TV", 
+                url: "https://cdn5.mjunoon.tv:8087/web/Madni-121/live/121H/chunks.m3u8", 
+                logo: "https://images.mjunoon.tv:8181/logo/Madni-TV-mjunoon.webp" 
+            },
+            { 
+                name: "AVT Khyber", 
+                url: "https://cdn5.mjunoon.tv:8087/web/AVTKhyber-114/live/114L/chunks.m3u8", 
+                logo: "https://via.placeholder.com/160x90.png?text=AVT+Khyber" 
+            },
+            { 
+                name: "See TV", 
+                url: "https://cdn5.mjunoon.tv:8087/web/SeeTV-156/live/156L/chunks.m3u8", 
+                logo: "https://images.mjunoon.tv:8181/logo/SEE-Tv-mjunoon.webp" 
+            },
+            { 
+                name: "KAY2", 
+                url: "https://cdn5.mjunoon.tv:8087/web/KAY2-127/live/127L/chunks.m3u8", 
+                logo: "https://via.placeholder.com/160x90.png?text=KAY2" 
+            },
+            { 
+                name: "Champion", 
+                url: "https://cdn5.mjunoon.tv:8087/web/champion-177/live/177M/chunks.m3u8", 
+                logo: "https://via.placeholder.com/160x90.png?text=Champion" 
+            },
+            { 
+                name: "Animal Planet", 
+                url: "https://cdn5.mjunoon.tv:8087/web/Animal-Planet-158-3/live/158-3L/chunks.m3u8", 
+                logo: "https://images.mjunoon.tv:8181/logo/animal-planet-logo.webp" 
+            },
+            { 
+                name: "PTV 1", 
+                url: "https://cdn5.mjunoon.tv:8087/web/TV1-129/live/129L/chunks.m3u8", 
+                logo: "https://via.placeholder.com/160x90.png?text=PTV+1" 
+            },
+            { 
+                name: "Waseb TV", 
+                url: "https://cdn5.mjunoon.tv:8087/web/WASEB-130/live/130L/chunks.m3u8", 
+                logo: "https://via.placeholder.com/160x90.png?text=Waseb" 
+            },
+            { 
+                name: "KTN", 
+                url: "https://cdn5.mjunoon.tv:8087/web/KTN-149/live/149L/chunks.m3u8", 
+                logo: "https://images.mjunoon.tv:8181/logo/KTN-mjunoon.webp" 
+            },
+            { 
+                name: "Kashish", 
+                url: "https://cdn5.mjunoon.tv:8087/web/Kashish-150/live/150L/chunks.m3u8", 
+                logo: "https://images.mjunoon.tv:8181/logo/Kashish-mjunoon.webp" 
+            },
+            { 
+                name: "Apna Channel", 
+                url: "https://cdn5.mjunoon.tv:8087/web/ApnaChannel-134/live/134L/chunks.m3u8", 
+                logo: "https://images.mjunoon.tv:8181/logo/Apna-mjunoon.webp" 
+            },
+            { 
+                name: "Pashto TV", 
+                url: "https://cdn5.mjunoon.tv:8087/web/PASHTOTV-119/live/119L/chunks.m3u8", 
+                logo: "https://images.mjunoon.tv:8181/logo/Pashto1-mjunoon.webp" 
+            },
+            { 
+                name: "Al Jazeera", 
+                url: "https://cdn5.mjunoon.tv:8087/web/aljazeera-148/live/148L/chunks.m3u8", 
+                logo: "https://images.mjunoon.tv:8181/logo/aljazeera-mjunoon.webp" 
+            },
+            { 
+                name: "K21 News", 
+                url: "https://cdn5.mjunoon.tv:8087/web/K21News-116/live/116L/chunks.m3u8", 
+                logo: "https://images.mjunoon.tv:8181/logo/K-21-news-mjunoon.webp" 
+            },
+            { 
+                name: "News 1", 
+                url: "https://cdn5.mjunoon.tv:8087/web/NEWS1-128/live/128L/chunks.m3u8", 
+                logo: "https://images.mjunoon.tv:8181/logo/News-one-mjunoon.webp" 
+            },
+            { 
+                name: "Abb Takk News", 
+                url: "https://cdn5.mjunoon.tv:8087/web/AbbTakNews-133/live/133L/chunks.m3u8", 
+                logo: "https://images.mjunoon.tv:8181/logo/Abb-Takk-mjunoon.webp" 
+            },
+            { 
+                name: "TRT English", 
+                url: "https://cdn5.mjunoon.tv:8087/web/TRTENG-153/live/153M/chunks.m3u8", 
+                logo: "https://images.mjunoon.tv:8181/logo/TRT-World-mjunoon.webp" 
+            }
+        ];
+
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current year in footer
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+            
+            const playerEl = document.getElementById('main-player');
+            const loadingEl = document.getElementById('loading');
+            const errorMsgEl = document.getElementById('error-msg');
+            const retryBtn = document.getElementById('retry-btn');
+            const channelList = document.getElementById('channel-list');
+            const channelSearch = document.getElementById('channel-search');
+            
+            // Initialize player with autoplay and custom controls
+            const player = videojs(playerEl, {
+                controls: true,
+                autoplay: 'muted',
+                liveui: true,
+                fluid: true,
+                html5: {
+                    hls: {
+                        overrideNative: true,
+                        enableLowInitialPlaylist: true,
+                        smoothQualityChange: true,
+                        bandwidth: 2000000
+                    }
+                },
+                controlBar: {
+                    children: [
+                        'playToggle',
+                        'volumePanel',
+                        'currentTimeDisplay',
+                        'timeDivider',
+                        'durationDisplay',
+                        'progressControl',
+                        'liveDisplay',
+                        'remainingTimeDisplay',
+                        'customControlSpacer',
+                        'fullscreenToggle'
+                    ],
+                    volumePanel: {
+                        inline: false
+                    }
+                }
+            });
+            
+            // Create channel cards
+            function renderChannels(channelArray = channels) {
+                channelList.innerHTML = '';
+                channelArray.forEach((channel, index) => {
+                    const channelCard = document.createElement('div');
+                    channelCard.className = 'channel-card';
+                    channelCard.innerHTML = `
+                        <div class="channel-logo-container">
+                            <img class="channel-logo" src="${channel.logo}" alt="${channel.name}" 
+                                 onerror="this.src='https://via.placeholder.com/160x90.png?text=${channel.name.replace(' ', '+')}'">
+                        </div>
+                        <div class="channel-info">
+                            <div class="channel-name">${channel.name}</div>
+                            <div class="now-playing">Live</div>
+                        </div>
+                    `;
+                    
+                    channelCard.addEventListener('click', () => {
+                        // Remove active class from all cards
+                        document.querySelectorAll('.channel-card').forEach(card => {
+                            card.classList.remove('channel-active');
+                        });
+                        
+                        // Add active class to clicked card
+                        channelCard.classList.add('channel-active');
+                        
+                        // Load the channel
+                        loadChannel(channel.url, channel.name);
+                    });
+                    
+                    channelList.appendChild(channelCard);
+                    
+                    // Activate first channel (SAMAA TV) on initial load
+                    if (index === 0 && channelArray === channels) {
+                        channelCard.classList.add('channel-active');
+                    }
+                });
+            }
+            
+            // Initial render
+            renderChannels();
+            
+            // Search functionality
+            channelSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                if (searchTerm.length > 0) {
+                    const filteredChannels = channels.filter(channel => 
+                        channel.name.toLowerCase().includes(searchTerm)
+                    );
+                    renderChannels(filteredChannels);
+                } else {
+                    renderChannels();
+                }
+            });
+            
+            // Load channel function
+            function loadChannel(url, name) {
+                loadingEl.style.display = 'block';
+                errorMsgEl.style.display = 'none';
+                
+                player.src({
+                    src: url,
+                    type: 'application/x-mpegURL'
+                });
+                
+                player.ready(() => {
+                    player.play().then(() => {
+                        loadingEl.style.display = 'none';
+                        document.title = `${name} - Pakistani TV Channels Live`;
+                        // Try to unmute after playback starts
+                        player.muted(false);
+                    }).catch(error => {
+                        console.error('Playback failed:', error);
+                        showError();
+                    });
+                });
+            }
+            
+            // Automatically load and play SAMAA TV on page load
+            loadChannel(channels[0].url, channels[0].name);
+            
+            // Retry button
+            retryBtn.addEventListener('click', function() {
+                const activeChannel = document.querySelector('.channel-active');
+                if (activeChannel) {
+                    const channelName = activeChannel.querySelector('.channel-name').textContent;
+                    const channel = channels.find(c => c.name === channelName);
+                    if (channel) {
+                        loadChannel(channel.url, channel.name);
+                    }
+                }
+            });
+            
+            // Error handling
+            player.on('error', function() {
+                const error = player.error();
+                console.error('Player error:', error);
+                showError();
+            });
+            
+            function showError() {
+                loadingEl.style.display = 'none';
+                errorMsgEl.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
